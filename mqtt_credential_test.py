@@ -26,18 +26,21 @@ import argparse
 import hmac
 import hashlib
 import base64
+import os
 from urllib.parse import quote_plus
 
-# Connection Constants (hardcoded)
-HOST = "<your_iothub_name>.azure-devices-int.net"
+# Connection Constants - Read from environment variables
+HUB_NAME = os.getenv("HUB_NAME", "ruath-iothub-004")
+DEVICE_NAME = os.getenv("DEVICE_NAME", "ruath-device-001")
+HOST = f"{HUB_NAME}.azure-devices-int.net"
 PORT = 8883
-CLIENT_ID = "<your_device_id>"
+CLIENT_ID = DEVICE_NAME
 USERNAME = f"{HOST}/{CLIENT_ID}/?api-version=2025-08-01-preview"
 CA_CERT = "../IoTHubRootCA.crt.pem"
 
-# X.509 Certificate Authentication
-DEVICE_CERT = "../<your_device_id>.crt"
-DEVICE_KEY = "../<your_device_id>.key"
+# X.509 Certificate Authentication - Use device name from environment
+DEVICE_CERT = f"./certGen/certs/{DEVICE_NAME}.crt"
+DEVICE_KEY = f"./certGen/private/{DEVICE_NAME}.key"
 
 # SAS Token Authentication
 HUB_SAS_KEY = "<Your Hub SAS Key Here>"
