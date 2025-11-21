@@ -101,25 +101,25 @@ fi
 # Set feature filter desired state
 log_section_header "Setting Feature Filter Desired State"
 run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.EnableCertificateIssuance 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Mqtt 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Amqp 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Mqtt 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Amqp 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState DcDeviceSessionV2 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState DeviceAuthChangeNotification 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState UseMockHttpHandlerForCertificateManagementClient 2 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Mqtt 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Amqp 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Mqtt 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Amqp 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState DcDeviceSessionV2 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState DeviceAuthChangeNotification 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilterDesiredState UseMockHttpHandlerForCertificateManagementClient 0 $CURRENT_DATE $ALIAS /PaasV2:True" > /dev/null 2>&1
 log_success "Feature filters desired state set successfully"
 
 # Set feature filter
 log_section_header "Setting Feature Filters"
 run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.EnableCertificateIssuance 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.Mqtt 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Amqp 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Mqtt 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.Amqp 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter DcDeviceSessionV2 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter DeviceAuthChangeNotification 1 /PaasV2:True" > /dev/null 2>&1
-run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter UseMockHttpHandlerForCertificateManagementClient 1 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.Mqtt 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Amqp 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Mqtt 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter Gateway.UseDcSessionVNext.Amqp 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter DcDeviceSessionV2 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter DeviceAuthChangeNotification 0 /PaasV2:True" > /dev/null 2>&1
+run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetFeatureFilter UseMockHttpHandlerForCertificateManagementClient 0 /PaasV2:True" > /dev/null 2>&1
 log_success "Feature filters set successfully"
 
 # Create IoT Hub

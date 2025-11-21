@@ -44,7 +44,37 @@ log_section_header() {
     log_info "$separator"
 }
 
-# Function to run DhCmd command via PowerShell
+# Function to check DhCmd output for errors
+# Usage: check_dhcmd_output "<output>" "<command_name>"
+# Returns 0 if no errors found, 1 if errors detected
+check_dhcmd_output() {
+    local output="$1"
+    local command_name="${2:-DhCmd}"
+    
+    # Common error patterns to check for
+    local error_patterns=(
+        "Error:"
+        "ERROR:"
+        "Exception:"
+        "EXCEPTION:"
+        "Failed:"
+        "FAILED:"
+    )
+    
+    # Check for each error pattern
+    for pattern in "${error_patterns[@]}"; do
+        if echo "$output" | grep -qi "$pattern"; then
+            log_error "$command_name output contains error indicator: '$pattern'"
+            log_error "Command output excerpt:"
+            echo "$output" | grep -i "$pattern" | head -5
+            return 1
+        fi
+    done
+    
+    return 0
+}
+
+# Function to run DhCmd command via PowerShell with error checking
 # Usage: run_dhcmd "<dhcmd_path>" "<rp_uri>" "<command_with_args>"
 # Example: run_dhcmd "$DHCMD_PATH" "$RP_URI" "GetIotHub myHub /ApiVersion:2025-08-01-preview"
 run_dhcmd() {
@@ -54,8 +84,28 @@ run_dhcmd() {
     local command="$*"
     
     log_info "Running DhCmd: $command"
-    pwsh -Command "& { & '$dhcmd_path' $command /RpUri:'$rp_uri' }"
-    return $?
+    
+    # Capture both stdout and stderr
+    local output
+    output=$(pwsh -Command "& { & '$dhcmd_path' $command /RpUri:'$rp_uri' 2>&1 }")
+    local exit_code=$?
+    
+    # Print output for visibility
+    echo "$output"
+    
+    # Check exit code first
+    if [ $exit_code -ne 0 ]; then
+        log_error "DhCmd command failed with exit code: $exit_code"
+        return $exit_code
+    fi
+    
+    # Check output for error patterns
+    if ! check_dhcmd_output "$output" "DhCmd"; then
+        log_error "DhCmd command completed but output contains errors"
+        return 1
+    fi
+    
+    return 0
 }
 
 # Function to check if hub is active
@@ -80,8 +130,14 @@ check_hub_status() {
     local exit_code=$?
     
     if [ $exit_code -ne 0 ]; then
-        log_warning "Failed to get hub status for $hub_name"
+        log_warning "Failed to get hub status for $hub_name (exit code: $exit_code)"
         echo "$output"
+        return 1
+    fi
+    
+    # Check output for errors
+    if ! check_dhcmd_output "$output" "GetIotHub"; then
+        log_warning "Error detected in hub status check for $hub_name"
         return 1
     fi
     
@@ -175,6 +231,7 @@ export -f log_success
 export -f log_warning
 export -f log_error
 export -f log_section_header
+export -f check_dhcmd_output
 export -f run_dhcmd
 export -f check_hub_status
 export -f wait_for_hub_activation
