@@ -1,0 +1,19 @@
+[project]
+name = "cert-mgmt-testing"
+version = "0.1.0"
+description = "Certificate management testing tools for Azure IoT Hub"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "paho-mqtt>=1.6.0",
+]
+
+[project.scripts]
+mqtt-issue-cert = "mqtt_issue_cert:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = []

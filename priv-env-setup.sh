@@ -205,12 +205,6 @@ log_info "Submitting verification certificate to IoT Hub..."
 run_dhcmd "$DHCMD_PATH" "$RP_URI" "VerifyCACert $HUB_NAME './certGen/certs/verification-code.cert.pem' 'iothub-gen2-intermediate-ca-test' '$CERTIFICATE_ETAG' /ApiVersion:$API_VERSION"
 log_success "CA Certificate verified successfully"
 
-# # Sync Policies
-# log_section_header "Syncing Certificate Policy Resource IDs on Scale Units"
-# log_info "Syncing certificate policy resource IDs across all scale units for hub: $HUB_NAME"
-# run_dhcmd "$DHCMD_PATH" "$RP_URI" "SyncCertificatePolicyResourceIdsOnScaleUnits $HUB_NAME /ApiVersion:$API_VERSION"
-# log_success "Certificate policy resource IDs synced successfully"
-
 # Create Device Certificate
 log_section_header "Creating Device Certificate"
 log_info "Generating device certificate for: $DEVICE_NAME"
