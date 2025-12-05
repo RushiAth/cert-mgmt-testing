@@ -16,6 +16,15 @@ import ssl
 import random
 import json
 import argparse
+import io
+
+# Check paho-mqtt version for API compatibility
+PAHO_MQTT_VERSION = getattr(mqtt, '__version__', '1.0.0')
+try:
+    major_version = int(PAHO_MQTT_VERSION.split('.')[0])
+    USE_NEW_CALLBACK_API = major_version >= 2
+except (ValueError, IndexError):
+    USE_NEW_CALLBACK_API = False
 
 # Global variables
 response_received = False
@@ -24,39 +33,54 @@ response_data = None
 def on_connect(client, userdata, flags, rc):
     """Callback for when the client connects to the broker."""
     if rc == 0:
-        print(f"✓ Connected successfully to {userdata['host']}")
-        print(f"✓ Subscribing to: {userdata['subscribe_topic']}")
+        print(f"[OK] Connected successfully to {userdata['host']}")
+        print(f"[OK] Subscribing to: {userdata['subscribe_topic']}")
         client.subscribe(userdata['subscribe_topic'], qos=1)
     else:
-        print(f"✗ Connection failed with code {rc}")
+        print(f"[FAIL] Connection failed with code {rc}")
+        # Connection error codes:
+        # 1: Connection refused - incorrect protocol version
+        # 2: Connection refused - invalid client identifier
+        # 3: Connection refused - server unavailable
+        # 4: Connection refused - bad username or password
+        # 5: Connection refused - not authorized
+        error_messages = {
+            1: "Incorrect protocol version",
+            2: "Invalid client identifier",
+            3: "Server unavailable",
+            4: "Bad username or password",
+            5: "Not authorized"
+        }
+        if rc in error_messages:
+            print(f"[FAIL] Reason: {error_messages[rc]}")
         sys.exit(1)
 
 def on_subscribe(client, userdata, mid, granted_qos):
     """Callback for when subscription is acknowledged."""
-    print(f"✓ Subscribed successfully (QoS: {granted_qos[0]})")
+    print(f"[OK] Subscribed successfully (QoS: {granted_qos[0]})")
     
     publish_topic = userdata['publish_topic']
     payload = userdata['payload']
     
-    print(f"✓ Publishing to: {publish_topic}")
+    print(f"[OK] Publishing to: {publish_topic}")
     print(f"  Payload: {payload}")
     
     result = client.publish(publish_topic, payload=payload, qos=1)
     if result.rc == mqtt.MQTT_ERR_SUCCESS:
-        print(f"✓ Publish request sent (mid: {result.mid})")
+        print(f"[OK] Publish request sent (mid: {result.mid})")
     else:
-        print(f"✗ Publish failed with code {result.rc}")
+        print(f"[FAIL] Publish failed with code {result.rc}")
 
 def on_publish(client, userdata, mid):
     """Callback for when a message is published."""
-    print(f"✓ Publish acknowledged by broker (mid: {mid})")
+    print(f"[OK] Publish acknowledged by broker (mid: {mid})")
 
 def on_message(client, userdata, msg):
     """Callback for when a message is received."""
     global response_received, response_data
     
     print(f"\n{'='*70}")
-    print(f"✓ RESPONSE RECEIVED!")
+    print(f"[OK] RESPONSE RECEIVED!")
     print(f"{'='*70}")
     print(f"Topic: {msg.topic}")
     print(f"QoS: {msg.qos}")
@@ -79,9 +103,9 @@ def on_message(client, userdata, msg):
     
     # Validate response
     if status_code == "202":
-        print(f"\n✓ SUCCESS: Received expected status code 202 - issueCertificate request accepted")
+        print(f"\n[OK] SUCCESS: Received expected status code 202 - issueCertificate request accepted")
     else:
-        print(f"\n✗ WARNING: Expected status code 202, got {status_code}")
+        print(f"\n[WARN] WARNING: Expected status code 202, got {status_code}")
     
     print(f"{'='*70}\n")
     
@@ -96,9 +120,9 @@ def on_message(client, userdata, msg):
 def on_disconnect(client, userdata, rc):
     """Callback for when the client disconnects."""
     if rc == 0:
-        print("✓ Disconnected gracefully")
+        print("[OK] Disconnected gracefully")
     else:
-        print(f"✗ Unexpected disconnection (code: {rc})")
+        print(f"[WARN] Unexpected disconnection (code: {rc})")
 
 def main():
     global response_received
@@ -151,8 +175,36 @@ def main():
     print(f"Publish Topic: {publish_topic}")
     print("=" * 70 + "\n")
     
-    # Create MQTT client
-    client = mqtt.Client(client_id=args.device, clean_session=True, protocol=mqtt.MQTTv311, userdata=userdata)
+    # Create MQTT client - handle both old (1.x) and new (2.x) paho-mqtt API
+    print(f"Using paho-mqtt version: {PAHO_MQTT_VERSION}")
+    
+    try:
+        if USE_NEW_CALLBACK_API:
+            # paho-mqtt 2.0+ API
+            client = mqtt.Client(
+                callback_api_version=mqtt.CallbackAPIVersion.VERSION1,
+                client_id=args.device,
+                clean_session=True,
+                protocol=mqtt.MQTTv311,
+                userdata=userdata
+            )
+        else:
+            # paho-mqtt 1.x API
+            client = mqtt.Client(
+                client_id=args.device,
+                clean_session=True,
+                protocol=mqtt.MQTTv311,
+                userdata=userdata
+            )
+    except TypeError as e:
+        # Fallback: try without callback_api_version
+        print(f"[WARN] Client creation with callback_api_version failed, trying fallback: {e}")
+        client = mqtt.Client(
+            client_id=args.device,
+            clean_session=True,
+            protocol=mqtt.MQTTv311,
+            userdata=userdata
+        )
     
     # Set username
     client.username_pw_set(username=username)
@@ -187,7 +239,7 @@ def main():
             time.sleep(0.1)
         
         if not response_received:
-            print(f"\n✗ Timeout: No response received after {args.timeout} seconds")
+            print(f"\n[FAIL] Timeout: No response received after {args.timeout} seconds")
             client.disconnect()
             sys.exit(1)
         
@@ -202,12 +254,12 @@ def main():
             sys.exit(1)
         
     except KeyboardInterrupt:
-        print("\n✗ Interrupted by user")
+        print("\n[FAIL] Interrupted by user")
         client.disconnect()
         client.loop_stop()
         sys.exit(1)
     except Exception as e:
-        print(f"\n✗ Error: {e}")
+        print(f"\n[FAIL] Error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -11,9 +11,5 @@ dependencies = [
 [project.scripts]
 mqtt-issue-cert = "mqtt_issue_cert:main"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [tool.uv]
 dev-dependencies = []

@@ -170,7 +170,7 @@ function Import-PfxToLocalMachine {
     }
 }
 
-# Convert PEM to PFX using OpenSSL
+# Convert PEM to PFX using OpenSSL (via bash for Windows compatibility)
 function Convert-PemToPfx {
     param(
         [string]$PemPath,
@@ -180,7 +180,8 @@ function Convert-PemToPfx {
     )
     
     try {
-        $opensslCmd = "openssl pkcs12 -export -out `"$PfxPath`" -inkey `"$KeyPath`" -in `"$PemPath`" -password pass:$Password"
+        # Use bash to run openssl for Windows compatibility
+        $opensslCmd = "bash -c `"openssl pkcs12 -export -out '$PfxPath' -inkey '$KeyPath' -in '$PemPath' -password pass:$Password`""
         Invoke-Expression $opensslCmd
         
         if (Test-Path $PfxPath) {

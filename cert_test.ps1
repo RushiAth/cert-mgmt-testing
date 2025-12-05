@@ -334,7 +334,7 @@ function Main {
             
             Push-Location "certs"
             Write-Info "Converting certificate to CRT format..."
-            & openssl x509 -in new-device.cert.pem -out "$($script:Config.DEVICE_NAME).crt"
+            & bash -c "openssl x509 -in new-device.cert.pem -out '$($script:Config.DEVICE_NAME).crt'"
             Pop-Location
             
             Push-Location "private"
@@ -404,9 +404,25 @@ function Main {
     
     # Run the Python MQTT script
     Write-Info "Running MQTT certificate issuance script..."
-    $mqttCmd = "python3 ./mqtt_issue_cert.py --host `"$mqttHost`" --device `"$($script:Config.DEVICE_NAME)`" --ca-cert `"$mqttCaCert`" --device-cert `"$mqttDeviceCert`" --device-key `"$mqttDeviceKey`" --port $mqttPort --timeout 30"
     
-    $mqttResult = Invoke-Expression $mqttCmd
+    # Use python instead of python3 on Windows, and run directly with & to stream output
+    $pythonCmd = "python"
+    if (Get-Command "python3" -ErrorAction SilentlyContinue) {
+        $pythonCmd = "python3"
+    }
+    
+    Write-Info "Using Python command: $pythonCmd"
+    
+    # Run the Python script directly with & operator to stream output to console
+    & $pythonCmd ./mqtt_issue_cert.py `
+        --host "$mqttHost" `
+        --device "$($script:Config.DEVICE_NAME)" `
+        --ca-cert "$mqttCaCert" `
+        --device-cert "$mqttDeviceCert" `
+        --device-key "$mqttDeviceKey" `
+        --port $mqttPort `
+        --timeout 30
+    
     $mqttExitCode = $LASTEXITCODE
     
     if ($mqttExitCode -eq 0) {
