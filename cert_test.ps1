@@ -17,6 +17,9 @@
     .\cert_test.ps1
 #>
 
+# Stop script on any error
+$ErrorActionPreference = "Stop"
+
 # Source utility functions
 . "$PSScriptRoot\utils.ps1"
 
@@ -55,6 +58,7 @@ $script:Config = @{
 # Compute derived resource IDs
 $script:Config.DEVICE_RESOURCE_ID = "$($script:Config.ADR_NAMESPACE_RESOURCE_ID)/devices/$($script:Config.DEVICE_NAME)"
 $script:Config.POLICY_RESOURCE_ID = "$($script:Config.ADR_NAMESPACE_RESOURCE_ID)/credentials/default/policies/default"
+$script:Config.POLICY_NAME = ($script:Config.ADR_NAMESPACE_RESOURCE_ID -split '/')[-1]
 
 # ========================================
 # VALIDATION
@@ -376,7 +380,7 @@ function Main {
         Write-Info "Device Name: $($script:Config.DEVICE_NAME)"
         Write-Info "Authentication: CA Certificate"
         
-        $createDeviceCmd = "$($script:Config.DHCMD_PATH) CreateDeviceWithHttpAndCertAuth $($script:Config.DEVICE_NAME) $($script:Config.DEVICE_RESOURCE_ID) $($script:Config.POLICY_RESOURCE_ID) /ConnectionString:`"$connectionString`" /ApiVersion:$($script:Config.API_VERSION) /RpUri:$($script:Config.RP_URI)"
+        $createDeviceCmd = "$($script:Config.DHCMD_PATH) CreateDeviceWithHttpAndCertAuth $($script:Config.HUB_NAME) $($script:Config.DEVICE_NAME) $($script:Config.POLICY_NAME) /ConnectionString:`"$connectionString`" /ApiVersion:$($script:Config.API_VERSION) /RpUri:$($script:Config.RP_URI)"
         Invoke-Expression $createDeviceCmd
         
         Write-Success "Device created successfully: $($script:Config.DEVICE_NAME)"
@@ -406,8 +410,12 @@ function Main {
     Write-Info "Running MQTT certificate issuance script..."
     
     # Use python instead of python3 on Windows, and run directly with & to stream output
+    # First check for venv python, then fall back to system python
     $pythonCmd = "python"
-    if (Get-Command "python3" -ErrorAction SilentlyContinue) {
+    if (Test-Path ".\venv\Scripts\python.exe") {
+        $pythonCmd = ".\venv\Scripts\python.exe"
+    }
+    elseif (Get-Command "python3" -ErrorAction SilentlyContinue) {
         $pythonCmd = "python3"
     }
     
