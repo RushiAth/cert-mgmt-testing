@@ -376,7 +376,7 @@ function Main {
         Write-Info "Device Name: $($script:Config.DEVICE_NAME)"
         Write-Info "Authentication: CA Certificate"
         
-        $createDeviceCmd = "$($script:Config.DHCMD_PATH) CreateDeviceWithHttpAndCertAuth $($script:Config.DEVICE_NAME) $($script:Config.DEVICE_RESOURCE_ID) $($script:Config.POLICY_RESOURCE_ID) /ConnectionString:`"$connectionString`" /ApiVersion:$($script:Config.API_VERSION)"
+        $createDeviceCmd = "$($script:Config.DHCMD_PATH) CreateDeviceWithHttpAndCertAuth $($script:Config.DEVICE_NAME) $($script:Config.DEVICE_RESOURCE_ID) $($script:Config.POLICY_RESOURCE_ID) /ConnectionString:`"$connectionString`" /ApiVersion:$($script:Config.API_VERSION) /RpUri:$($script:Config.RP_URI)"
         Invoke-Expression $createDeviceCmd
         
         Write-Success "Device created successfully: $($script:Config.DEVICE_NAME)"
