@@ -295,7 +295,7 @@ if echo "$DEVICE_EXISTS_RESULT" | grep -q "DeviceId.*$DEVICE_NAME"; then
 else
     log_info "Device Name: $DEVICE_NAME"
     log_info "Authentication: CA Certificate"
-    pwsh -Command "$DHCMD_PATH CreateDeviceWithHttpAndCertAuth $DEVICE_NAME $DEVICE_RESOURCE_ID $POLICY_RESOURCE_ID /ConnectionString:\"$IOTHUB_CONNECTION_STRING\" /ApiVersion:$API_VERSION"
+    run_dhcmd "$DHCMD_PATH" "$RP_URI" "CreateDeviceWithHttpAndCertAuth $HUB_NAME $DEVICE_NAME \"default\" /ApiVersion:$API_VERSION"
     log_success "Device created successfully: $DEVICE_NAME"
 fi
 
