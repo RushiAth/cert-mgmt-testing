@@ -429,7 +429,7 @@ function Main {
         --device-cert "$mqttDeviceCert" `
         --device-key "$mqttDeviceKey" `
         --port $mqttPort `
-        --timeout 30
+        --timeout 90
     
     $mqttExitCode = $LASTEXITCODE
     

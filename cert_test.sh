@@ -330,7 +330,7 @@ python3 ./mqtt_issue_cert.py \
     --device-cert "$MQTT_DEVICE_CERT" \
     --device-key "$MQTT_DEVICE_KEY" \
     --port "$MQTT_PORT" \
-    --timeout 30
+    --timeout 90
 
 MQTT_EXIT_CODE=$?
 

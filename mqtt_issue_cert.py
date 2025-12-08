@@ -29,6 +29,7 @@ except (ValueError, IndexError):
 # Global variables
 response_received = False
 response_data = None
+first_202_time = None
 
 def on_connect(client, userdata, flags, rc):
     """Callback for when the client connects to the broker."""
@@ -77,7 +78,7 @@ def on_publish(client, userdata, mid):
 
 def on_message(client, userdata, msg):
     """Callback for when a message is received."""
-    global response_received, response_data
+    global response_received, response_data, first_202_time
     
     print(f"\n{'='*70}")
     print(f"[OK] RESPONSE RECEIVED!")
@@ -102,10 +103,17 @@ def on_message(client, userdata, msg):
         print(f"\nStatus Code: {status_code}")
     
     # Validate response
-    if status_code == "202":
-        print(f"\n[OK] SUCCESS: Received expected status code 202 - issueCertificate request accepted")
+    if status_code == "200":
+        print(f"\n[OK] SUCCESS: Received status code 200 - Certificate issued successfully")
+        if first_202_time is not None:
+            elapsed = time.time() - first_202_time
+            print(f"[INFO] Time between 202 and 200 response: {elapsed:.2f} seconds")
+    elif status_code == "202":
+        if first_202_time is None:
+            first_202_time = time.time()
+        print(f"\n[INFO] Received status code 202 - Request accepted, waiting for completion...")
     else:
-        print(f"\n[WARN] WARNING: Expected status code 202, got {status_code}")
+        print(f"\n[WARN] WARNING: Received status code {status_code}")
     
     print(f"{'='*70}\n")
     
@@ -114,8 +122,11 @@ def on_message(client, userdata, msg):
         'payload': payload_str,
         'status_code': status_code
     }
-    response_received = True
-    client.disconnect()
+    
+    # Only mark as complete and disconnect when we receive a 200 status
+    if status_code == "200":
+        response_received = True
+        client.disconnect()
 
 def on_disconnect(client, userdata, rc):
     """Callback for when the client disconnects."""
@@ -138,7 +149,7 @@ def main():
     parser.add_argument('--device-cert', required=True, help='Path to device certificate')
     parser.add_argument('--device-key', required=True, help='Path to device private key')
     parser.add_argument('--port', type=int, default=8883, help='MQTT port (default: 8883)')
-    parser.add_argument('--timeout', type=int, default=30, help='Response timeout in seconds (default: 30)')
+    parser.add_argument('--timeout', type=int, default=60, help='Response timeout in seconds (default: 60)')
     parser.add_argument('--api-version', default='2025-08-01-preview', help='API version (default: 2025-08-01-preview)')
     parser.add_argument('--csr', default='TU9DSyBDU1I=', help='Base64 encoded CSR (default: mock CSR)')
     
@@ -239,7 +250,7 @@ def main():
             time.sleep(0.1)
         
         if not response_received:
-            print(f"\n[FAIL] Timeout: No response received after {args.timeout} seconds")
+            print(f"\n[FAIL] Timeout: No 200 response received after {args.timeout} seconds")
             client.disconnect()
             sys.exit(1)
         
@@ -247,8 +258,8 @@ def main():
         time.sleep(0.5)
         client.loop_stop()
         
-        # Exit with appropriate code
-        if response_data and response_data.get('status_code') == '202':
+        # Exit with appropriate code (success if we received 200)
+        if response_data and response_data.get('status_code') == '200':
             sys.exit(0)
         else:
             sys.exit(1)
