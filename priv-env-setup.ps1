@@ -111,31 +111,31 @@ function Main {
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Mqtt 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Mqtt 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Amqp 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Amqp 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Mqtt 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.LazyReauth.Mqtt 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Amqp 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState Gateway.UseDcSessionVNext.Amqp 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState DcDeviceSessionV2 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState DcDeviceSessionV2 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState DeviceAuthChangeNotification 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState DeviceAuthChangeNotification 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState UseMockHttpHandlerForCertificateManagementClient 0 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState UseMockHttpHandlerForCertificateManagementClient 2 $currentDate $alias /PaasV2:True"
     
     Write-Success "Feature filters desired state set successfully"
     
@@ -150,31 +150,31 @@ function Main {
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.Mqtt 0 /PaasV2:True"
+                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.Mqtt 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Amqp 0 /PaasV2:True"
+                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Amqp 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Mqtt 0 /PaasV2:True"
+                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.LazyReauth.Mqtt 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.Amqp 0 /PaasV2:True"
+                 -Command "SetFeatureFilter Gateway.UseDcSessionVNext.Amqp 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter DcDeviceSessionV2 0 /PaasV2:True"
+                 -Command "SetFeatureFilter DcDeviceSessionV2 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter DeviceAuthChangeNotification 0 /PaasV2:True"
+                 -Command "SetFeatureFilter DeviceAuthChangeNotification 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter UseMockHttpHandlerForCertificateManagementClient 0 /PaasV2:True"
+                 -Command "SetFeatureFilter UseMockHttpHandlerForCertificateManagementClient 1 /PaasV2:True"
     
     Write-Success "Feature filters set successfully"
 }

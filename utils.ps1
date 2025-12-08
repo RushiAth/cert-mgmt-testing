@@ -38,8 +38,9 @@ function Import-EnvFile {
                 $value = $matches[1]
             }
             
-            # Set environment variable
-            [Environment]::SetEnvironmentVariable($key, $value, 'Process')
+            # Set environment variable using PowerShell's env: provider directly
+            # This ensures immediate visibility to $env:* variables
+            Set-Item -Path "env:$key" -Value $value -Force
             Write-Host "[INFO]   Set $key" -ForegroundColor Gray
         }
     }
