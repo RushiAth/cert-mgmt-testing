@@ -7,3 +7,4 @@
 *.log
 index.txt*
 serial*
+venv
