@@ -107,7 +107,7 @@ function Main {
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilterDesiredState Gateway.EnableCertificateIssuance 2 $currentDate $alias /PaasV2:True"
+                 -Command "SetFeatureFilterDesiredState Gateway.EnableCertificateIssuance.Mqtt 2 $currentDate $alias /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
@@ -146,7 +146,7 @@ function Main {
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
-                 -Command "SetFeatureFilter Gateway.EnableCertificateIssuance 1 /PaasV2:True"
+                 -Command "SetFeatureFilter Gateway.EnableCertificateIssuance.Mqtt 1 /PaasV2:True"
     
     Invoke-DhCmd -DhCmdPath $script:Config.DHCMD_PATH `
                  -RpUri $script:Config.RP_URI `
