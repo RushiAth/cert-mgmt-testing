@@ -25,6 +25,7 @@ set -u  # Exit on undefined variable
 # Source utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils.sh"
+source .env
 
 # ========================================
 # CONFIGURATION - Hardcode values here if desired
@@ -37,8 +38,14 @@ DHCMD_PATH="${DHCMD_PATH:-}"
 REGION="${REGION:-}"
 TENANT_ID="${TENANT_ID:-}"
 ADR_NAMESPACE_RESOURCE_ID="${ADR_NAMESPACE_RESOURCE_ID:-}"
+POLICY_RESOURCE_ID="${ADR_NAMESPACE_RESOURCE_ID}/credentials/default/policies/default"
 UAMI_RESOURCE_ID="${UAMI_RESOURCE_ID:-}"
 CERT_OUTPUT_DIR="${CERT_OUTPUT_DIR:-}"
+
+CERT_NAME="iothub-gen2-intermediate-ca-test"
+CERT_THUMBPRINT="${CERT_THUMBPRINT:-}"
+
+API_VERSION="2025-08-01-preview"
 # ========================================
 
 # Parse cleanup flag
@@ -145,18 +152,6 @@ elif [ -n "$DHCMD_PATH_ARG" ]; then
         log_error "Specified DhCmd.exe path does not exist: $DHCMD_PATH_ARG"
         exit 1
     fi
-else
-    # Try to find DhCmd.exe in default locations
-    if [ -f "$SCRIPT_DIR/../../build_output/bin/amd64-Release/DhCmd/DhCmd.exe" ]; then
-        DHCMD_PATH="$SCRIPT_DIR/../../build_output/bin/amd64-Release/DhCmd/DhCmd.exe"
-    elif [ -f "$SCRIPT_DIR/bin/DhCmd.exe" ]; then
-        DHCMD_PATH="$SCRIPT_DIR/bin/DhCmd.exe"
-    else
-        log_error "DhCmd.exe not found in expected locations"
-        log_error "Please build the project first, hardcode the path in the script, or specify it as an argument"
-        exit 1
-    fi
-    log_success "DhCmd.exe found at: $DHCMD_PATH"
 fi
 echo ""
 
@@ -231,14 +226,14 @@ echo ""
 
 log_info "Initiating bulk creation of $NUM_HUBS hubs with prefix: $HUB_NAME_PREFIX"
 
-# if run_dhcmd "$DHCMD_PATH" "$RP_URI" "CreateIotHubsGen2 $HUB_NAME_PREFIX $NUM_HUBS $ADR_NAMESPACE_RESOURCE_ID $UAMI_RESOURCE_ID $REGION $TENANT_ID"; then
-#     log_success "Bulk hub creation initiated for $NUM_HUBS hubs"
-# else
-#     log_error "Failed to initiate bulk hub creation"
-#     exit 1
-# fi
+if run_dhcmd "$DHCMD_PATH" "$RP_URI" "CreateIotHubsGen2 $HUB_NAME_PREFIX $NUM_HUBS $ADR_NAMESPACE_RESOURCE_ID $UAMI_RESOURCE_ID $REGION $TENANT_ID /ApiVersion:$API_VERSION"; then
+    log_success "Bulk hub creation initiated for $NUM_HUBS hubs"
+else
+    log_error "Failed to initiate bulk hub creation"
+    exit 1
+fi
 
-echo ""
+# echo ""
 
 # Build list of expected hub names
 for i in $(seq 1 $NUM_HUBS); do
@@ -279,28 +274,65 @@ fi
 log_success "${#ACTIVATED_HUBS[@]} hub(s) successfully activated out of $NUM_HUBS"
 echo ""
 
-# Step 3: Add devices to each activated hub
-log_section_header "STEP 3: Adding Devices to Hub(s)"
+# Step 3: Set Certificate with Policy on each activated hub
+log_section_header "STEP 3: Setting Certificate with Policy on Hub(s)"
 echo ""
 
-# for hub_name in "${ACTIVATED_HUBS[@]}"; do
-#     log_info "Adding $DEVICES_PER_HUB devices to hub: $hub_name"
-    
-#     if run_dhcmd "$DHCMD_PATH" "$RP_URI" "BulkAddDevicesWithCACert $hub_name $DEVICES_PER_HUB"; then
-#         log_success "Successfully added $DEVICES_PER_HUB devices to $hub_name"
-#     else
-#         log_error "Failed to add devices to hub: $hub_name"
-#         log_warning "Continuing with other hubs..."
-#     fi
-    
-#     echo ""
-# done
+for hub_name in "${ACTIVATED_HUBS[@]}"; do
+    log_info "Setting certificate with policy on hub: $hub_name"
 
-# Step 4: Update /etc/hosts file
-log_section_header "STEP 4: Updating /etc/hosts File"
+    if run_dhcmd "$DHCMD_PATH" "$RP_URI" "SetCertificateWithPolicy $hub_name $CERT_NAME $CERT_THUMBPRINT My LocalMachine $POLICY_RESOURCE_ID /ApiVersion:$API_VERSION"; then
+        log_success "Successfully set certificate with policy on hub: $hub_name"
+    else
+        log_warning "Failed to set certificate with policy on hub: $hub_name"
+    fi
+
+    echo ""
+done
+
+# Sleep for a short duration to ensure settings propagate
+log_info "Waiting for 30 seconds to allow settings to propagate..."
+sleep 30
 echo ""
 
-# Check if we have write access to /etc/hosts
+# Step 4: Add devices to each activated hub
+log_section_header "STEP 4: Adding Devices to Hub(s)"
+echo ""
+
+DEVICE_POLICY_NAME="default"  # Default shared access policy name
+
+for hub_name in "${ACTIVATED_HUBS[@]}"; do
+    log_info "Adding $DEVICES_PER_HUB devices to hub: $hub_name"
+    
+    DEVICES_ADDED=0
+    DEVICES_FAILED=0
+    
+    for i in $(seq 0 $((DEVICES_PER_HUB - 1))); do
+        # Create 5-digit zero-padded device ID
+        DEVICE_ID=$(printf "device%05d" $i)
+        
+        if run_dhcmd "$DHCMD_PATH" "$RP_URI" "CreateDeviceWithHttpAndCertAuth $hub_name $DEVICE_ID $DEVICE_POLICY_NAME /ApiVersion:$API_VERSION"; then
+            DEVICES_ADDED=$((DEVICES_ADDED + 1))
+        else
+            log_warning "Failed to add device $DEVICE_ID to hub: $hub_name"
+            DEVICES_FAILED=$((DEVICES_FAILED + 1))
+        fi
+    done
+    
+    if [ $DEVICES_FAILED -eq 0 ]; then
+        log_success "Successfully added $DEVICES_ADDED devices to $hub_name"
+    else
+        log_warning "Added $DEVICES_ADDED devices to $hub_name ($DEVICES_FAILED failed)"
+    fi
+    
+    echo ""
+done
+
+# # Step 5: Update /etc/hosts file
+# log_section_header "STEP 5: Updating /etc/hosts File"
+# echo ""
+
+# # Check if we have write access to /etc/hosts
 # if [ ! -w /etc/hosts ]; then
 #     log_warning "/etc/hosts is not writable. Attempting to use sudo..."
     
@@ -377,12 +409,12 @@ echo ""
 #     fi
 # fi
 
-echo ""
-log_info "Added ${#ACTIVATED_HUBS[@]} hub entries to /etc/hosts"
-echo ""
+# echo ""
+# log_info "Added ${#ACTIVATED_HUBS[@]} hub entries to /etc/hosts"
+# echo ""
 
-# Step 5: Generate device certificates
-log_section_header "STEP 5: Generating Device Certificates"
+# Step 6: Generate device certificates
+log_section_header "STEP 6: Generating Device Certificates"
 echo ""
 
 log_info "Certificate output directory: $CERT_OUTPUT_DIR"
