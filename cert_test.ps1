@@ -58,7 +58,7 @@ $script:Config = @{
 # Compute derived resource IDs
 $script:Config.DEVICE_RESOURCE_ID = "$($script:Config.ADR_NAMESPACE_RESOURCE_ID)/devices/$($script:Config.DEVICE_NAME)"
 $script:Config.POLICY_RESOURCE_ID = "$($script:Config.ADR_NAMESPACE_RESOURCE_ID)/credentials/default/policies/default"
-$script:Config.POLICY_NAME = ($script:Config.ADR_NAMESPACE_RESOURCE_ID -split '/')[-1]
+$script:Config.POLICY_NAME = ($script:Config.POLICY_RESOURCE_ID -split '/')[-1]
 
 # ========================================
 # VALIDATION

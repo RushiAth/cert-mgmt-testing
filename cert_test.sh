@@ -6,6 +6,7 @@
 
 # Source utility functions
 source "$(dirname "$0")/utils.sh"
+source .env
 
 # ========================================
 # CONFIGURATION - Hardcode values here if desired
